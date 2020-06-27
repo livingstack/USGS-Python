@@ -4,8 +4,10 @@ import pygal
 import datetime
 from datetime import datetime
 import smtplib
+from pathlib import Path
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from flask import Flask
 url = "https://waterservices.usgs.gov/nwis/iv/?sites=10163000,10155200&format=json,1.1&period=P7D"
 
 response = requests.get(url)
@@ -110,11 +112,11 @@ formattedldate = []
 
     
 for sampling in middlestoredvalues:
-    mflow.append(int(sampling['value']))
+    mflow.append(int(float(sampling['value'])))
     mdate.append(sampling['dateTime'])
 
 for sampling in lowerstoredvalues:
-    lflow.append(int(sampling['value']))
+    lflow.append(int(float(sampling['value'])))
     ldate.append(sampling['dateTime'])
 
 for date in mdate:
@@ -131,8 +133,7 @@ for date in ldate:
 #print(lflow)
 #make visualization
 
-#style1 = LS('#333366', base_style=LCS)
-#chart1 = pygal.Bar(style = style1, x_label_rotation=45, show_legend=true)
+
 chart1 = pygal.Bar()
 chart1.title = "Middle Provo flows from past week"
 chart1.x_labels = formattedmdate
@@ -140,7 +141,7 @@ chart1.x_labels = formattedmdate
 #chart1.add('', [535,523,548,528,516,535])
 chart1.add('Flows', mflow)
 #chart1.render()
-chart1.render_to_file('python_usgs_middle_repo.svg')
+#chart1.render_to_file('python_usgs_middle_repo.svg')
 
 #style2 = LS('#333366', base_style=LCS)
 #chart2 = pygal.Bar(style = style2, x_label_rotation=45, show_legend=true)
@@ -149,8 +150,14 @@ chart2.title = "Lower Provo flows from past week"
 chart2.x_labels = formattedldate
 
 chart2.add('Flows',lflow)
-chart2.render_to_file('python_usgs_lower_repo.svg')
+#chart2.render_to_file('python_usgs_lower_repo.svg')
 
+chart3 = pygal.Bar()
+chart3.title = "Lower and Middle Provo flows from past week"
+chart3.x_labels = formattedldate
+chart3.add('Lower Flows',lflow)
+chart3.add('Middle Flows',mflow)
+chart3.render_to_file('/opt/streamflows/static/images/Lower_and_Middle_Provo.svg')
 lcurrentdate = formattedldate[-1]
 lyesterday = formattedldate[-2]
 
@@ -254,3 +261,22 @@ if cfsflowthresholdbreached == True:
                 cfsflowthresholdreachedd -= 1
 print (msg)
 #import pdb; pdb.set_trace()
+app = Flask(__name__)
+
+@app.route('/usgs')
+
+def application(environ,start_response):
+    status = '200 OK'
+        #response_header = [('Content-type','text/html')]
+    html = '<html>\n' \
+        '<body>\n' \
+        '<div style="width: 100%; font-size: 40px; font-weight: bold; text-align: center;">\n' \
+        'Provo River CFS Flows:\n' \
+        '</div>\n' \
+        '<img src="/static/images/Lower_and_Middle_Provo.svg" alt="Lower and Middle provo flows for past 7 days"/>\n' \
+	'</body>\n' \
+        '</html>\n'
+    html = bytes(html,encoding = 'utf-8')
+    response_header = [('Content-type','text/html')]
+    start_response(status,response_header)
+    return [html]
