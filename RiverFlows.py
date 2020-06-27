@@ -208,7 +208,7 @@ recipientemail = "dyeman20@gmail.com"
 
 server = smtplib.SMTP(host="smtp.gmail.com",port = 587)
 server.starttls()
-server.login("dyeman20", "icnikxypnoqpzgcb")
+server.login("dyeman20", "xxxxxxxxxxx")
 msg = MIMEMultipart()
 msg['From']="dyeman20@gmail.com"
 msg['To']="dyeman20@gmail.com"
