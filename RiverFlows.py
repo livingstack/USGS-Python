@@ -1,9 +1,3 @@
-#test comment 1
-#test comment 2
-#test comment 3
-#test comment 4
-#test comment 5
-#test comment 6
 import requests
 import json
 import pygal
